@@ -1,0 +1,80 @@
+:root{
+  --bg:#0b0f17;
+  --card:#121a26;
+  --text:#eaf0ff;
+  --muted:#aab6d6;
+  --line:#22314a;
+  --accent:#7aa7ff;
+  --bad:#ff6b6b;
+  --good:#5de4a8;
+  --radius:16px;
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1200px 600px at 20% 0%, #121a26 0%, var(--bg) 55%);
+  color:var(--text);
+}
+.wrap{max-width:860px;margin:0 auto;padding:28px 16px 40px}
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
+h1{margin:0;font-size:34px;letter-spacing:0.3px}
+.sub{margin:6px 0 0;color:var(--muted)}
+.meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.pill{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,0.03);
+  padding:8px 10px;border-radius:999px;
+  color:var(--muted);font-size:13px
+}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  margin:12px 0;
+}
+.card h2{margin:0 0 10px;font-size:18px}
+.clues{margin:0;padding-left:18px;color:var(--text)}
+.clues li{margin:8px 0;line-height:1.35}
+.hint{margin:10px 0 0;color:var(--muted);font-size:13px}
+
+form{display:flex;gap:10px;flex-wrap:wrap}
+input{
+  flex:1;
+  min-width:220px;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#0e1420;
+  color:var(--text);
+  outline:none;
+}
+button{
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(122,167,255,0.18);
+  color:var(--text);
+  cursor:pointer;
+}
+button:hover{background:rgba(122,167,255,0.28)}
+.status{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
+.msg{color:var(--muted)}
+.msg.good{color:var(--good)}
+.msg.bad{color:var(--bad)}
+.history{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:8px}
+.history li{
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px 12px;
+  display:flex;justify-content:space-between;gap:10px;
+  background:rgba(0,0,0,0.12);
+  color:var(--muted);
+}
+.hidden{display:none}
+.foot{margin-top:18px;color:var(--muted);display:flex;gap:10px;justify-content:center}
+.foot a{color:var(--muted);text-decoration:none}
+.foot a:hover{color:var(--text)}

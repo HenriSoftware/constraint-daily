@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Constraint — Daily Logic</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- AdSense: enable only after approval (replace ca-pub-XXXX) -->
+  <!--
+  <script async
+    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXX"
+    crossorigin="anonymous"></script>
+  -->
+</head>
+<body>
+  <main class="wrap">
+    <header class="top">
+      <div>
+        <h1>Constraint</h1>
+        <p class="sub">Daily logic puzzle • 6 clues • 1 answer</p>
+      </div>
+      <div class="meta">
+        <div id="date" class="pill">—</div>
+        <div id="streak" class="pill">Streak: 0</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Today’s clues</h2>
+      <ol id="clues" class="clues"></ol>
+      <p class="hint">Clues are shuffled daily. Guess the hidden answer.</p>
+    </section>
+
+    <section class="card">
+      <h2>Your guess</h2>
+      <form id="guessForm" autocomplete="off">
+        <input id="guessInput" type="text" placeholder="Type a word or short phrase…" maxlength="40" required />
+        <button id="guessBtn" type="submit">Guess</button>
+      </form>
+
+      <div class="status">
+        <div id="attempts">Attempts: 0/6</div>
+        <div id="msg" class="msg"></div>
+      </div>
+
+      <ul id="history" class="history"></ul>
+    </section>
+
+    <section id="endCard" class="card hidden">
+      <h2 id="endTitle">Result</h2>
+      <p id="endText"></p>
+      <details>
+        <summary>Explanation</summary>
+        <p id="explanation"></p>
+      </details>
+      <button id="shareBtn" type="button">Share</button>
+    </section>
+
+    <footer class="foot">
+      <a href="legal/privacy.html">Privacy</a>
+      <span>•</span>
+      <a href="legal/impressum.html">Impressum</a>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

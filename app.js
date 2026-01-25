@@ -33,6 +33,8 @@ const statPlayed = document.getElementById("statPlayed");
 const statWins = document.getElementById("statWins");
 const statWinrate = document.getElementById("statWinrate");
 
+const STATE_VERSION = 2; // bump when changing saved-state structure
+
 function norm(s) {
   return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -52,6 +54,7 @@ function loadStats() {
 function saveStats(s) {
   localStorage.setItem(STATS_KEY, JSON.stringify(s));
 }
+
 function getStreak() {
   return Number(localStorage.getItem("constraint:streak") || "0");
 }
@@ -59,6 +62,7 @@ function setStreak(n) {
   localStorage.setItem("constraint:streak", String(n));
   elStreak.textContent = `Streak: ${n}`;
 }
+
 function setMsg(text, type = "") {
   elMsg.textContent = text;
   elMsg.className = "msg" + (type ? ` ${type}` : "");
@@ -69,6 +73,18 @@ function openModal(el) {
 }
 function closeModal(el) {
   el.classList.add("hidden");
+}
+
+// Ensure only ONE modal at a time + stop background scroll
+function closeAllModals() {
+  closeModal(howModal);
+  closeModal(statsModal);
+  document.body.classList.remove("modalOpen");
+}
+function openExclusive(modalEl) {
+  closeAllModals();
+  openModal(modalEl);
+  document.body.classList.add("modalOpen");
 }
 
 function updateStatsModal() {
@@ -104,34 +120,27 @@ function classLabel(cls) {
 }
 
 /**
- * Reveal logic (your new concept):
+ * Reveal logic:
  * - Start with 1 clue visible.
- * - Each wrong attempt reveals 1 more clue.
- * - Solving ends game.
- * - Max 6 attempts.
+ * - Each wrong attempt reveals 1 more clue (max 6).
  */
-function computeRevealedCount(attempts, revealAllFlag, done) {
-  if (revealAllFlag || done) return 6;
-  // Start with 1 clue.
-  // After 1 wrong attempt -> 2 clues, etc.
-  // attempts here counts total submitted attempts (wrong + correct)
-  // But we only want wrong attempts to reveal clues.
-  // We'll store wrongAttempts separately for precision.
-  return 1; // default, overwritten by wrongAttempts in state
+function revealedCount(saved) {
+  if (saved.revealAll || saved.done) return 6;
+  return Math.min(6, 1 + (saved.wrongAttempts || 0));
 }
 
-function renderClues(puzzle, revealedCount) {
+function renderClues(puzzle, count) {
   elClues.innerHTML = "";
 
   for (let i = 0; i < 6; i++) {
     const li = document.createElement("li");
 
     const row = document.createElement("div");
-    row.className = "clueRow" + (i < revealedCount ? "" : " locked");
+    row.className = "clueRow" + (i < count ? "" : " locked");
 
     const text = document.createElement("div");
     text.className = "clueText";
-    text.textContent = i < revealedCount ? puzzle.clues[i] : "Locked clue";
+    text.textContent = i < count ? puzzle.clues[i] : "Locked clue";
 
     const badge = document.createElement("span");
     badge.className = "clueClass";
@@ -175,25 +184,29 @@ function setEndState(win, answer, explanation, shareText) {
 }
 
 function yyyyMmDdUTC(dateStr) {
-  // expects YYYY-MM-DD
   return new Date(dateStr + "T00:00:00Z");
 }
 
 (async function init() {
-  // Modal wiring
-  howBtn.addEventListener("click", () => openModal(howModal));
-  howLink.addEventListener("click", (e) => { e.preventDefault(); openModal(howModal); });
-  howClose.addEventListener("click", () => closeModal(howModal));
-  howOk.addEventListener("click", () => closeModal(howModal));
+  // --- Modal wiring (fixed) ---
+  howBtn.addEventListener("click", () => openExclusive(howModal));
+  howLink.addEventListener("click", (e) => { e.preventDefault(); openExclusive(howModal); });
 
-  statsBtn.addEventListener("click", () => { updateStatsModal(); openModal(statsModal); });
-  statsClose.addEventListener("click", () => closeModal(statsModal));
-  statsOk.addEventListener("click", () => closeModal(statsModal));
+  statsBtn.addEventListener("click", () => { updateStatsModal(); openExclusive(statsModal); });
 
-  howModal.addEventListener("click", (e) => { if (e.target === howModal) closeModal(howModal); });
-  statsModal.addEventListener("click", (e) => { if (e.target === statsModal) closeModal(statsModal); });
+  howClose.addEventListener("click", closeAllModals);
+  howOk.addEventListener("click", closeAllModals);
+  statsClose.addEventListener("click", closeAllModals);
+  statsOk.addEventListener("click", closeAllModals);
 
-  // Load puzzle
+  howModal.addEventListener("click", (e) => { if (e.target === howModal) closeAllModals(); });
+  statsModal.addEventListener("click", (e) => { if (e.target === statsModal) closeAllModals(); });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeAllModals();
+  });
+
+  // --- Load puzzle ---
   const res = await fetch("daily/latest.json", { cache: "no-store" });
   const puzzle = await res.json();
 
@@ -203,19 +216,37 @@ function yyyyMmDdUTC(dateStr) {
   const accepted = new Set([norm(puzzle.answer), ...(puzzle.accepted || []).map(norm)]);
   const lastCompleted = localStorage.getItem("constraint:last_completed");
 
-  // Daily state
+  // --- Load day state ---
   const key = storageKey(date);
   const saved = JSON.parse(localStorage.getItem(key) || "null") || {
+    version: STATE_VERSION,
     attempts: 0,
     wrongAttempts: 0,
     done: false,
     win: false,
     history: [],
-    revealAll: false
+    revealAll: false,
+    _countedPlayed: false
   };
 
-  // On first ever view of the day, count "played" once (only if not already stored)
-  // Prevent double-counting if user reloads.
+  // --- Migrate old states to new format (prevents weird reveal values) ---
+  if (!saved.version || saved.version < STATE_VERSION) {
+    const correctOffset = saved.win ? 1 : 0;
+    const approxWrong = Math.max(0, (saved.attempts || 0) - correctOffset);
+
+    saved.wrongAttempts = Number.isFinite(saved.wrongAttempts) ? saved.wrongAttempts : approxWrong;
+    saved.revealAll = !!saved.revealAll;
+    saved.history = Array.isArray(saved.history) ? saved.history : [];
+    saved.done = !!saved.done;
+    saved.win = !!saved.win;
+    saved.attempts = Number(saved.attempts || 0);
+    saved._countedPlayed = !!saved._countedPlayed;
+
+    saved.version = STATE_VERSION;
+    localStorage.setItem(key, JSON.stringify(saved));
+  }
+
+  // Count "played" once per day state (not every refresh)
   if (!saved._countedPlayed) {
     const s = loadStats();
     s.played = (s.played || 0) + 1;
@@ -224,14 +255,9 @@ function yyyyMmDdUTC(dateStr) {
     localStorage.setItem(key, JSON.stringify(saved));
   }
 
-  // Reveal computation: 1 + wrongAttempts (cap 6)
-  function revealedCount() {
-    if (saved.revealAll || saved.done) return 6;
-    return Math.min(6, 1 + (saved.wrongAttempts || 0));
-  }
-
   function updateUI() {
-    const r = revealedCount();
+    const r = revealedCount(saved);
+
     elRevealInfo.textContent = `Revealed: ${r}/6`;
     elAttempts.textContent = `Attempts: ${saved.attempts}/${MAX_ATTEMPTS}`;
 
@@ -260,13 +286,14 @@ function yyyyMmDdUTC(dateStr) {
 
   updateUI();
 
-  // If first time ever, show how-to-play
+  // Show how-to-play once per browser
   const seenHow = localStorage.getItem("constraint:seen_how");
   if (!seenHow) {
     localStorage.setItem("constraint:seen_how", "1");
-    openModal(howModal);
+    openExclusive(howModal);
   }
 
+  // --- Guess handler ---
   elForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (saved.done) return;
@@ -283,6 +310,7 @@ function yyyyMmDdUTC(dateStr) {
     }
 
     const ok = accepted.has(guess);
+
     saved.attempts += 1;
     saved.history.push({ g: guess, ok });
 
@@ -296,7 +324,6 @@ function yyyyMmDdUTC(dateStr) {
       s.wins = (s.wins || 0) + 1;
       saveStats(s);
 
-      // streak increments if last_completed == yesterday, else reset to 1
       const today = yyyyMmDdUTC(date);
       const y = new Date(today);
       y.setUTCDate(y.getUTCDate() - 1);

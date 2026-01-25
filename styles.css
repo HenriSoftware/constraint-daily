@@ -17,17 +17,42 @@ body{
   background: radial-gradient(1200px 600px at 20% 0%, #121a26 0%, var(--bg) 55%);
   color:var(--text);
 }
-.wrap{max-width:860px;margin:0 auto;padding:28px 16px 40px}
-.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:18px}
-h1{margin:0;font-size:34px;letter-spacing:0.3px}
+
+.wrap{max-width:920px;margin:0 auto;padding:28px 16px 40px}
+
+.top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:18px
+}
+
+.brand h1{margin:0;font-size:34px;letter-spacing:0.3px}
 .sub{margin:6px 0 0;color:var(--muted)}
+
+.topRight{display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 .meta{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+
 .pill{
   border:1px solid var(--line);
   background:rgba(255,255,255,0.03);
   padding:8px 10px;border-radius:999px;
   color:var(--muted);font-size:13px
 }
+
+.ghost{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,0.02);
+  color:var(--muted);
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+}
+.ghost:hover{color:var(--text); background:rgba(255,255,255,0.04)}
+
 .card{
   background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
   border:1px solid var(--line);
@@ -36,9 +61,61 @@ h1{margin:0;font-size:34px;letter-spacing:0.3px}
   box-shadow: 0 10px 30px rgba(0,0,0,0.25);
   margin:12px 0;
 }
-.card h2{margin:0 0 10px;font-size:18px}
-.clues{margin:0;padding-left:18px;color:var(--text)}
-.clues li{margin:8px 0;line-height:1.35}
+
+.cardHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:6px;
+}
+
+.card h2{margin:0;font-size:18px}
+
+.smallMeta{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.chip{
+  border:1px solid var(--line);
+  background:rgba(0,0,0,0.12);
+  color:var(--muted);
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+}
+
+.clues{
+  margin:0;
+  padding-left:18px;
+  color:var(--text);
+}
+
+.clueRow{
+  margin:10px 0;
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  justify-content:space-between;
+}
+
+.clueText{line-height:1.35; flex: 1}
+.clueClass{
+  font-size:11px;
+  color:rgba(170,182,214,0.72);
+  border:1px solid rgba(34,49,74,0.8);
+  padding:4px 8px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.10);
+  white-space:nowrap;
+  margin-left:10px;
+}
+
+.locked{
+  color:rgba(170,182,214,0.55);
+}
+
+.locked .clueClass{
+  opacity:0.55;
+}
+
 .hint{margin:10px 0 0;color:var(--muted);font-size:13px}
 
 form{display:flex;gap:10px;flex-wrap:wrap}
@@ -61,11 +138,20 @@ button{
   cursor:pointer;
 }
 button:hover{background:rgba(122,167,255,0.28)}
-.status{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
+
+.status{display:flex;justify-content:flex-start;align-items:center;margin-top:12px;gap:10px;flex-wrap:wrap}
 .msg{color:var(--muted)}
 .msg.good{color:var(--good)}
 .msg.bad{color:var(--bad)}
-.history{list-style:none;padding:0;margin:12px 0 0;display:flex;flex-direction:column;gap:8px}
+
+.history{
+  list-style:none;
+  padding:0;
+  margin:12px 0 0;
+  display:flex;
+  flex-direction:column;
+  gap:8px
+}
 .history li{
   border:1px solid var(--line);
   border-radius:12px;
@@ -75,6 +161,98 @@ button:hover{background:rgba(122,167,255,0.28)}
   color:var(--muted);
 }
 .hidden{display:none}
-.foot{margin-top:18px;color:var(--muted);display:flex;gap:10px;justify-content:center}
+
+.endActions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:10px 0 6px;
+}
+
+.details summary{cursor:pointer;color:var(--muted)}
+.details summary:hover{color:var(--text)}
+
+.foot{
+  margin-top:18px;
+  color:var(--muted);
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
 .foot a{color:var(--muted);text-decoration:none}
 .foot a:hover{color:var(--text)}
+
+.muted{color:var(--muted); font-size:13px}
+
+/* Modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:999;
+}
+.modalCard{
+  width:min(720px, 100%);
+  background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow: 0 20px 80px rgba(0,0,0,0.6);
+  overflow:hidden;
+}
+.modalHead{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+}
+.modalHead h3{margin:0;font-size:16px}
+.iconBtn{
+  border:1px solid var(--line);
+  background:rgba(255,255,255,0.02);
+  color:var(--muted);
+  width:36px;height:36px;
+  border-radius:12px;
+  cursor:pointer;
+}
+.iconBtn:hover{color:var(--text); background:rgba(255,255,255,0.04)}
+
+.modalBody{padding:16px}
+.modalFoot{
+  padding:14px 16px;
+  border-top:1px solid var(--line);
+  display:flex;
+  justify-content:flex-end;
+}
+
+.howList{margin:0;padding-left:18px}
+.howList li{margin:8px 0; line-height:1.35}
+
+.howBox{
+  margin-top:14px;
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(0,0,0,0.12);
+  padding:12px;
+}
+.howBoxTitle{font-size:12px;color:var(--muted);margin-bottom:6px}
+.howBoxText{line-height:1.35}
+
+.statsGrid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:10px;
+}
+.stat{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(0,0,0,0.12);
+  padding:12px;
+}
+.statLabel{color:var(--muted);font-size:12px}
+.statValue{font-size:22px;margin-top:6px}

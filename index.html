@@ -13,34 +13,53 @@
     crossorigin="anonymous"></script>
   -->
 </head>
+
 <body>
   <main class="wrap">
     <header class="top">
-      <div>
+      <div class="brand">
         <h1>Constraint</h1>
         <p class="sub">Daily logic puzzle • 6 clues • 1 answer</p>
       </div>
-      <div class="meta">
-        <div id="date" class="pill">—</div>
-        <div id="streak" class="pill">Streak: 0</div>
+
+      <div class="topRight">
+        <div class="meta">
+          <div id="date" class="pill">—</div>
+          <div id="streak" class="pill">Streak: 0</div>
+        </div>
+
+        <div class="actions">
+          <button id="howBtn" class="ghost" type="button">How to play</button>
+          <button id="statsBtn" class="ghost" type="button">Stats</button>
+        </div>
       </div>
     </header>
 
     <section class="card">
-      <h2>Today’s clues</h2>
+      <div class="cardHead">
+        <h2>Today’s clues</h2>
+        <div class="smallMeta">
+          <span id="revealInfo" class="chip">Revealed: 1/6</span>
+          <span id="attempts" class="chip">Attempts: 0/6</span>
+        </div>
+      </div>
+
       <ol id="clues" class="clues"></ol>
-      <p class="hint">Clues are shuffled daily. Guess the hidden answer.</p>
+
+      <p class="hint">
+        Start with one clue. Each wrong guess reveals one more.
+      </p>
     </section>
 
     <section class="card">
       <h2>Your guess</h2>
+
       <form id="guessForm" autocomplete="off">
         <input id="guessInput" type="text" placeholder="Type a word or short phrase…" maxlength="40" required />
         <button id="guessBtn" type="submit">Guess</button>
       </form>
 
       <div class="status">
-        <div id="attempts">Attempts: 0/6</div>
         <div id="msg" class="msg"></div>
       </div>
 
@@ -50,19 +69,96 @@
     <section id="endCard" class="card hidden">
       <h2 id="endTitle">Result</h2>
       <p id="endText"></p>
-      <details>
+
+      <div class="endActions">
+        <button id="shareBtn" type="button">Share</button>
+        <button id="revealAllBtn" type="button" class="ghost">Reveal all clues</button>
+      </div>
+
+      <details class="details">
         <summary>Explanation</summary>
         <p id="explanation"></p>
       </details>
-      <button id="shareBtn" type="button">Share</button>
     </section>
 
     <footer class="foot">
       <a href="legal/privacy.html">Privacy</a>
       <span>•</span>
       <a href="legal/impressum.html">Impressum</a>
+      <span>•</span>
+      <a href="#" id="howLink">How to play</a>
     </footer>
   </main>
+
+  <!-- HOW TO PLAY MODAL -->
+  <div id="howModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="howTitle">
+    <div class="modalCard">
+      <div class="modalHead">
+        <h3 id="howTitle">How to play</h3>
+        <button id="howClose" class="iconBtn" type="button" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <ol class="howList">
+          <li>Every day there is <strong>one</strong> hidden answer.</li>
+          <li>You start with <strong>one clue</strong>.</li>
+          <li>Each <strong>wrong guess</strong> reveals <strong>one new clue</strong> (up to 6).</li>
+          <li>Each clue has a small label showing its <strong>class</strong> (category).</li>
+          <li>You have <strong>6 attempts</strong>. Solve it to keep your streak.</li>
+        </ol>
+
+        <div class="howBox">
+          <div class="howBoxTitle">Tip</div>
+          <div class="howBoxText">
+            Some days are easier for factual thinkers, other days reward intuition. The mix of clue classes changes daily.
+          </div>
+        </div>
+      </div>
+
+      <div class="modalFoot">
+        <button id="howOk" type="button">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS MODAL -->
+  <div id="statsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+    <div class="modalCard">
+      <div class="modalHead">
+        <h3 id="statsTitle">Stats</h3>
+        <button id="statsClose" class="iconBtn" type="button" aria-label="Close">✕</button>
+      </div>
+
+      <div class="modalBody">
+        <div class="statsGrid">
+          <div class="stat">
+            <div class="statLabel">Streak</div>
+            <div id="statStreak" class="statValue">0</div>
+          </div>
+          <div class="stat">
+            <div class="statLabel">Played</div>
+            <div id="statPlayed" class="statValue">0</div>
+          </div>
+          <div class="stat">
+            <div class="statLabel">Wins</div>
+            <div id="statWins" class="statValue">0</div>
+          </div>
+          <div class="stat">
+            <div class="statLabel">Win rate</div>
+            <div id="statWinrate" class="statValue">0%</div>
+          </div>
+        </div>
+
+        <p class="muted">
+          Stats are stored locally in your browser (no account).
+        </p>
+      </div>
+
+      <div class="modalFoot">
+        <button id="statsOk" type="button">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script src="app.js"></script>
 </body>

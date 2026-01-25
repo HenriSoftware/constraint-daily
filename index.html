@@ -3,132 +3,205 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Constraint — Daily Logic</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#0b0f17" />
+  <meta name="robots" content="index,follow" />
 
-  <!-- AdSense: enable only after approval (replace ca-pub-XXXX) -->
-  <!--
-  <script async
-    src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXX"
-    crossorigin="anonymous"></script>
-  -->
+  <!-- Reduce caching pain on GitHub Pages -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <title>Constraint — Daily Logic</title>
+
+  <!-- cache-bust: bump v when you deploy -->
+  <link rel="stylesheet" href="styles.css?v=100" />
 </head>
 
 <body>
-  <main class="wrap">
-    <header class="top">
+  <a class="skip" href="#main">Skip to content</a>
+
+  <div class="bgNoise" aria-hidden="true"></div>
+
+  <header class="siteHeader">
+    <div class="headerInner">
       <div class="brand">
-        <h1>Constraint</h1>
-        <p class="sub">Daily logic puzzle • 6 clues • 1 answer</p>
-      </div>
-
-      <div class="topRight">
-        <div class="meta">
-          <div id="date" class="pill">—</div>
-          <div id="streak" class="pill">Streak: 0</div>
-        </div>
-
-        <div class="actions">
-          <button id="howBtn" class="ghost" type="button">How to play</button>
-          <button id="statsBtn" class="ghost" type="button">Stats</button>
+        <div class="logo" aria-hidden="true">◆</div>
+        <div class="brandText">
+          <h1 class="title">Constraint</h1>
+          <p class="subtitle">Daily logic puzzle · 6 clues · 1 answer</p>
         </div>
       </div>
-    </header>
 
+      <div class="headerRight">
+        <div class="pills">
+          <div id="pillDate" class="pill" title="Puzzle date">—</div>
+          <div id="pillCountdown" class="pill" title="Time until next puzzle">Next: —</div>
+          <div id="pillStreak" class="pill" title="Current streak">Streak: 0</div>
+        </div>
+
+        <div class="headerButtons">
+          <button id="btnHow" class="btn btnGhost" type="button">How to play</button>
+          <button id="btnStats" class="btn btnGhost" type="button">Stats</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main id="main" class="wrap">
+    <!-- TOP STATUS BAR -->
+    <section class="topBar card">
+      <div class="topBarLeft">
+        <div class="topLabel">Today</div>
+        <div class="topValue" id="topDate">—</div>
+      </div>
+
+      <div class="topBarRight">
+        <div class="chips">
+          <div id="chipRevealed" class="chip">Revealed: 1/6</div>
+          <div id="chipAttempts" class="chip">Attempts: 0/6</div>
+        </div>
+        <div class="micro" id="microStatus">Start with one clue. Each wrong guess reveals one more.</div>
+      </div>
+    </section>
+
+    <!-- CLUES -->
     <section class="card">
       <div class="cardHead">
-        <h2>Today’s clues</h2>
-        <div class="smallMeta">
-          <span id="revealInfo" class="chip">Revealed: 1/6</span>
-          <span id="attempts" class="chip">Attempts: 0/6</span>
+        <h2 class="h2">Clues</h2>
+        <div class="cardTools">
+          <button id="btnRevealAll" class="btn btnGhost" type="button" title="Reveal all clues (does not affect streak)">
+            Reveal all
+          </button>
         </div>
       </div>
 
-      <ol id="clues" class="clues"></ol>
+      <ol id="clueList" class="clueList" aria-live="polite"></ol>
 
-      <p class="hint">
-        Start with one clue. Each wrong guess reveals one more.
-      </p>
+      <div class="note">
+        Tip: the label on each clue is its <span class="em">class</span> (category) — sometimes factual, sometimes creative.
+      </div>
     </section>
 
+    <!-- GUESS INPUT -->
     <section class="card">
-      <h2>Your guess</h2>
+      <div class="cardHead">
+        <h2 class="h2">Your guess</h2>
+        <div class="cardTools">
+          <button id="btnResetToday" class="btn btnDanger hidden" type="button" title="Debug reset (only visible with ?debug=1)">
+            Reset today
+          </button>
+        </div>
+      </div>
 
-      <form id="guessForm" autocomplete="off">
-        <input id="guessInput" type="text" placeholder="Type a word or short phrase…" maxlength="40" required />
-        <button id="guessBtn" type="submit">Guess</button>
+      <form id="guessForm" class="guessForm" autocomplete="off">
+        <label class="srOnly" for="guessInput">Enter your guess</label>
+        <input
+          id="guessInput"
+          class="input"
+          type="text"
+          placeholder="Type a word or short phrase…"
+          maxlength="40"
+          required
+        />
+        <button id="btnGuess" class="btn btnPrimary" type="submit">Guess</button>
       </form>
 
-      <div class="status">
-        <div id="msg" class="msg"></div>
+      <div class="statusRow" aria-live="polite">
+        <div id="statusMsg" class="statusMsg">—</div>
+        <div id="statusHint" class="statusHint"></div>
       </div>
 
-      <ul id="history" class="history"></ul>
+      <ul id="guessHistory" class="history" aria-label="Guess history"></ul>
     </section>
 
-    <section id="endCard" class="card hidden">
-      <h2 id="endTitle">Result</h2>
-      <p id="endText"></p>
-
-      <div class="endActions">
-        <button id="shareBtn" type="button">Share</button>
-        <button id="revealAllBtn" type="button" class="ghost">Reveal all clues</button>
+    <!-- END CARD -->
+    <section id="endCard" class="card hidden" aria-live="polite">
+      <div class="cardHead">
+        <h2 id="endTitle" class="h2">Result</h2>
+        <div class="cardTools">
+          <button id="btnShare" class="btn btnPrimary" type="button">Share</button>
+          <button id="btnCopyAnswer" class="btn btnGhost" type="button">Copy answer</button>
+        </div>
       </div>
+
+      <p id="endText" class="endText"></p>
 
       <details class="details">
         <summary>Explanation</summary>
-        <p id="explanation"></p>
+        <p id="explanation" class="explanation"></p>
+      </details>
+
+      <div class="endFooter">
+        <div class="small">
+          Your streak is stored locally in your browser. No account required.
+        </div>
+      </div>
+    </section>
+
+    <!-- INLINE HOW TO PLAY (non-modal, for completeness / SEO) -->
+    <section class="card">
+      <details class="details" id="howInline">
+        <summary>How to play</summary>
+        <div class="howBlock">
+          <ol class="howList">
+            <li>There is one hidden answer each day.</li>
+            <li>You start with <strong>one</strong> visible clue.</li>
+            <li>Each <strong>wrong</strong> guess reveals <strong>one</strong> new clue (max 6).</li>
+            <li>Clues have subtle <strong>class labels</strong> that hint what type of clue it is.</li>
+            <li>You have <strong>6 attempts</strong>. Solve it to keep your streak.</li>
+          </ol>
+          <div class="howTip">
+            Some days reward factual thinking, others reward intuition. The clue class mix changes daily.
+          </div>
+        </div>
       </details>
     </section>
 
-    <footer class="foot">
+    <footer class="footer">
       <a href="legal/privacy.html">Privacy</a>
-      <span>•</span>
+      <span class="dot">•</span>
       <a href="legal/impressum.html">Impressum</a>
-      <span>•</span>
-      <a href="#" id="howLink">How to play</a>
+      <span class="dot">•</span>
+      <a href="#" id="linkHow">How to play</a>
     </footer>
   </main>
 
-  <!-- HOW TO PLAY MODAL -->
-  <div id="howModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="howTitle">
-    <div class="modalCard">
-      <div class="modalHead">
-        <h3 id="howTitle">How to play</h3>
-        <button id="howClose" class="iconBtn" type="button" aria-label="Close">✕</button>
-      </div>
+  <!-- MODAL BACKDROP -->
+  <div id="backdrop" class="backdrop hidden" aria-hidden="true"></div>
 
+  <!-- HOW MODAL -->
+  <section id="modalHow" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalHowTitle">
+    <div class="modalCard" role="document">
+      <div class="modalHead">
+        <h3 id="modalHowTitle" class="modalTitle">How to play</h3>
+        <button id="closeHow" class="iconBtn" type="button" aria-label="Close">✕</button>
+      </div>
       <div class="modalBody">
         <ol class="howList">
-          <li>Every day there is <strong>one</strong> hidden answer.</li>
-          <li>You start with <strong>one clue</strong>.</li>
-          <li>Each <strong>wrong guess</strong> reveals <strong>one new clue</strong> (up to 6).</li>
-          <li>Each clue has a small label showing its <strong>class</strong> (category).</li>
-          <li>You have <strong>6 attempts</strong>. Solve it to keep your streak.</li>
+          <li>There is one hidden answer each day.</li>
+          <li>You start with <strong>one</strong> clue.</li>
+          <li>Each wrong guess reveals one more clue (up to 6).</li>
+          <li>Each clue shows a subtle <strong>class</strong> label.</li>
+          <li>You have 6 attempts.</li>
         </ol>
-
-        <div class="howBox">
-          <div class="howBoxTitle">Tip</div>
-          <div class="howBoxText">
-            Some days are easier for factual thinkers, other days reward intuition. The mix of clue classes changes daily.
-          </div>
+        <div class="howTip">
+          Tip: Class labels are not “difficulty”, they describe the clue type. Some players prefer factual classes, others creative.
         </div>
       </div>
-
       <div class="modalFoot">
-        <button id="howOk" type="button">Got it</button>
+        <button id="okHow" class="btn btnPrimary" type="button">Got it</button>
       </div>
     </div>
-  </div>
+  </section>
 
   <!-- STATS MODAL -->
-  <div id="statsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
-    <div class="modalCard">
+  <section id="modalStats" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalStatsTitle">
+    <div class="modalCard" role="document">
       <div class="modalHead">
-        <h3 id="statsTitle">Stats</h3>
-        <button id="statsClose" class="iconBtn" type="button" aria-label="Close">✕</button>
+        <h3 id="modalStatsTitle" class="modalTitle">Stats</h3>
+        <button id="closeStats" class="iconBtn" type="button" aria-label="Close">✕</button>
       </div>
-
       <div class="modalBody">
         <div class="statsGrid">
           <div class="stat">
@@ -145,21 +218,25 @@
           </div>
           <div class="stat">
             <div class="statLabel">Win rate</div>
-            <div id="statWinrate" class="statValue">0%</div>
+            <div id="statWinRate" class="statValue">0%</div>
           </div>
         </div>
 
-        <p class="muted">
-          Stats are stored locally in your browser (no account).
-        </p>
-      </div>
+        <div class="divider"></div>
 
+        <div class="small">
+          Stored locally in your browser. Clearing site data resets stats.
+        </div>
+      </div>
       <div class="modalFoot">
-        <button id="statsOk" type="button">Close</button>
+        <button id="okStats" class="btn btnPrimary" type="button">Close</button>
       </div>
     </div>
-  </div>
+  </section>
 
-  <script src="app.js"></script>
+  <!-- Toast -->
+  <div id="toastHost" class="toastHost" aria-live="polite" aria-atomic="true"></div>
+
+  <script src="app.js?v=100"></script>
 </body>
 </html>

@@ -1,16 +1,15 @@
 :root{
   --bg:#0b0f17;
-  --card:#121a26;
   --text:#eaf0ff;
   --muted:#aab6d6;
   --line:#22314a;
-  --accent:#7aa7ff;
   --bad:#ff6b6b;
   --good:#5de4a8;
   --radius:16px;
 }
 
 *{box-sizing:border-box}
+
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -19,9 +18,7 @@ body{
 }
 
 /* prevent background scroll when modal open */
-body.modalOpen{
-  overflow:hidden;
-}
+body.modalOpen{ overflow:hidden; }
 
 .wrap{max-width:920px;margin:0 auto;padding:28px 16px 40px}
 
@@ -112,12 +109,8 @@ body.modalOpen{
   margin-left:10px;
 }
 
-.locked{
-  color:rgba(170,182,214,0.55);
-}
-.locked .clueClass{
-  opacity:0.55;
-}
+.locked{ color:rgba(170,182,214,0.55); }
+.locked .clueClass{ opacity:0.55; }
 
 .hint{margin:10px 0 0;color:var(--muted);font-size:13px}
 
@@ -189,16 +182,16 @@ button:hover{background:rgba(122,167,255,0.28)}
 
 .muted{color:var(--muted); font-size:13px}
 
-/* Modal */
+/* Modal overlay (darker + correct stacking) */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,0.72); /* darker so it doesn't feel like "two pages" */
+  background:rgba(0,0,0,0.78);
   display:flex;
   align-items:center;
   justify-content:center;
   padding:16px;
-  z-index:999;
+  z-index:9999;
 }
 
 .modalCard{

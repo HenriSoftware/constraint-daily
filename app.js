@@ -1,5 +1,6 @@
 const MAX_ATTEMPTS = 6;
 
+// UI refs
 const elDate = document.getElementById("date");
 const elStreak = document.getElementById("streak");
 const elClues = document.getElementById("clues");
@@ -33,7 +34,7 @@ const statPlayed = document.getElementById("statPlayed");
 const statWins = document.getElementById("statWins");
 const statWinrate = document.getElementById("statWinrate");
 
-const STATE_VERSION = 2; // bump when changing saved-state structure
+const STATE_VERSION = 3; // bump when changing saved-state structure
 
 function norm(s) {
   return String(s || "").trim().toLowerCase().replace(/\s+/g, " ");
@@ -43,13 +44,10 @@ function storageKey(date) {
   return `constraint:${date}`;
 }
 
-// Global stats
+// Stats storage
 const STATS_KEY = "constraint:stats";
 function loadStats() {
-  return JSON.parse(localStorage.getItem(STATS_KEY) || "null") || {
-    played: 0,
-    wins: 0
-  };
+  return JSON.parse(localStorage.getItem(STATS_KEY) || "null") || { played: 0, wins: 0 };
 }
 function saveStats(s) {
   localStorage.setItem(STATS_KEY, JSON.stringify(s));
@@ -68,14 +66,10 @@ function setMsg(text, type = "") {
   elMsg.className = "msg" + (type ? ` ${type}` : "");
 }
 
-function openModal(el) {
-  el.classList.remove("hidden");
-}
-function closeModal(el) {
-  el.classList.add("hidden");
-}
+// Modal helpers (exclusive + guaranteed close)
+function openModal(el) { el.classList.remove("hidden"); }
+function closeModal(el) { el.classList.add("hidden"); }
 
-// Ensure only ONE modal at a time + stop background scroll
 function closeAllModals() {
   closeModal(howModal);
   closeModal(statsModal);
@@ -100,7 +94,6 @@ function updateStatsModal() {
   statWinrate.textContent = `${winrate}%`;
 }
 
-// Human-friendly class labels
 function classLabel(cls) {
   const map = {
     ontological: "Ontological",
@@ -114,16 +107,11 @@ function classLabel(cls) {
     limitation: "Limitation",
     representational: "Representation",
     social_collective: "Social",
-    creative_cognitive: "Creative"
+    creative_cognitive: "Creative",
   };
   return map[cls] || cls;
 }
 
-/**
- * Reveal logic:
- * - Start with 1 clue visible.
- * - Each wrong attempt reveals 1 more clue (max 6).
- */
 function revealedCount(saved) {
   if (saved.revealAll || saved.done) return 6;
   return Math.min(6, 1 + (saved.wrongAttempts || 0));
@@ -149,7 +137,6 @@ function renderClues(puzzle, count) {
     row.appendChild(text);
     row.appendChild(badge);
     li.appendChild(row);
-
     elClues.appendChild(li);
   }
 }
@@ -166,10 +153,7 @@ function renderHistory(history) {
 function setEndState(win, answer, explanation, shareText) {
   endCard.classList.remove("hidden");
   endTitle.textContent = win ? "Solved ✅" : "Out of attempts";
-  endText.textContent = win
-    ? "Come back tomorrow for a new puzzle."
-    : `Answer: ${answer}`;
-
+  endText.textContent = win ? "Come back tomorrow for a new puzzle." : `Answer: ${answer}`;
   elExplanation.textContent = explanation || "";
 
   shareBtn.onclick = async () => {
@@ -188,10 +172,12 @@ function yyyyMmDdUTC(dateStr) {
 }
 
 (async function init() {
-  // --- Modal wiring (fixed) ---
+  // 🔧 HARD RESET: prevent “stuck modal” from restored DOM state (mobile/Safari quirks)
+  closeAllModals();
+
+  // Modal wiring (exclusive, safe)
   howBtn.addEventListener("click", () => openExclusive(howModal));
   howLink.addEventListener("click", (e) => { e.preventDefault(); openExclusive(howModal); });
-
   statsBtn.addEventListener("click", () => { updateStatsModal(); openExclusive(statsModal); });
 
   howClose.addEventListener("click", closeAllModals);
@@ -206,7 +192,7 @@ function yyyyMmDdUTC(dateStr) {
     if (e.key === "Escape") closeAllModals();
   });
 
-  // --- Load puzzle ---
+  // Load puzzle
   const res = await fetch("daily/latest.json", { cache: "no-store" });
   const puzzle = await res.json();
 
@@ -216,7 +202,7 @@ function yyyyMmDdUTC(dateStr) {
   const accepted = new Set([norm(puzzle.answer), ...(puzzle.accepted || []).map(norm)]);
   const lastCompleted = localStorage.getItem("constraint:last_completed");
 
-  // --- Load day state ---
+  // Load day state
   const key = storageKey(date);
   const saved = JSON.parse(localStorage.getItem(key) || "null") || {
     version: STATE_VERSION,
@@ -226,27 +212,28 @@ function yyyyMmDdUTC(dateStr) {
     win: false,
     history: [],
     revealAll: false,
-    _countedPlayed: false
+    _countedPlayed: false,
   };
 
-  // --- Migrate old states to new format (prevents weird reveal values) ---
+  // Migrate old states safely
   if (!saved.version || saved.version < STATE_VERSION) {
     const correctOffset = saved.win ? 1 : 0;
-    const approxWrong = Math.max(0, (saved.attempts || 0) - correctOffset);
+    const approxWrong = Math.max(0, (Number(saved.attempts || 0) - correctOffset));
 
-    saved.wrongAttempts = Number.isFinite(saved.wrongAttempts) ? saved.wrongAttempts : approxWrong;
-    saved.revealAll = !!saved.revealAll;
+    saved.attempts = Number(saved.attempts || 0);
     saved.history = Array.isArray(saved.history) ? saved.history : [];
     saved.done = !!saved.done;
     saved.win = !!saved.win;
-    saved.attempts = Number(saved.attempts || 0);
+    saved.revealAll = !!saved.revealAll;
+
+    saved.wrongAttempts = Number.isFinite(saved.wrongAttempts) ? saved.wrongAttempts : approxWrong;
     saved._countedPlayed = !!saved._countedPlayed;
 
     saved.version = STATE_VERSION;
     localStorage.setItem(key, JSON.stringify(saved));
   }
 
-  // Count "played" once per day state (not every refresh)
+  // Count "played" once per day
   if (!saved._countedPlayed) {
     const s = loadStats();
     s.played = (s.played || 0) + 1;
@@ -257,7 +244,6 @@ function yyyyMmDdUTC(dateStr) {
 
   function updateUI() {
     const r = revealedCount(saved);
-
     elRevealInfo.textContent = `Revealed: ${r}/6`;
     elAttempts.textContent = `Attempts: ${saved.attempts}/${MAX_ATTEMPTS}`;
 
@@ -277,7 +263,7 @@ function yyyyMmDdUTC(dateStr) {
   // Streak display
   elStreak.textContent = `Streak: ${getStreak()}`;
 
-  // Reveal-all button
+  // Reveal all
   revealAllBtn.onclick = () => {
     saved.revealAll = true;
     localStorage.setItem(key, JSON.stringify(saved));
@@ -286,14 +272,14 @@ function yyyyMmDdUTC(dateStr) {
 
   updateUI();
 
-  // Show how-to-play once per browser
+  // Auto-open ONLY "How to play" once per browser (never Stats)
   const seenHow = localStorage.getItem("constraint:seen_how");
   if (!seenHow) {
     localStorage.setItem("constraint:seen_how", "1");
     openExclusive(howModal);
   }
 
-  // --- Guess handler ---
+  // Guess handler
   elForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (saved.done) return;

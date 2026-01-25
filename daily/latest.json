@@ -1,7 +1,14 @@
 {
   "date": "2026-01-25",
   "answer": "umbrella",
-  "classes": ["ontological", "functional", "contextual", "structural", "dependency", "representational"],
+  "classes": [
+    "ontological",
+    "functional",
+    "contextual",
+    "structural",
+    "dependency",
+    "representational"
+  ],
   "clues": [
     "Is a physical object commonly carried by individuals.",
     "Provides protection from weather conditions.",
@@ -11,6 +18,9 @@
     "Commonly represented by a simple icon in forecasts."
   ],
   "explanation": "An umbrella is a physical object used outdoors to protect from rain or sun. It has a collapsible ribbed frame and is commonly symbolized in weather forecasts.",
-  "accepted": ["umbrella"],
-  "difficulty": "easy"
+  "accepted": [
+    "umbrella"
+  ],
+  "difficulty": "easy",
+  "fallback": true
 }
